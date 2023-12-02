@@ -22,18 +22,13 @@ def rotate_point(origin, point, angle, direction):
 def generate_feature(win, feature, angle=0, direction="clockwise", thickness=1):
 
     # Check that feature is correctly specified
-    assert feature in ("cross", "tee", "elbow", "radius", "diameter"), "Feature must be one of 'cross', 'tee',  'radius', 'diameter'."
+    assert feature in ("cross", "tee", "elbow", "radius", "diameter"), "Feature must be one of 'cross', 'tee', 'radius', 'diameter'."
 
     # Convert angle to radians and set direction
     if direction == "clockwise":
         angle = np.deg2rad(angle)
     elif direction == "counterclockwise":
         angle = -np.deg2rad(angle)
-    
-    # Create feature_output matrix, if end feature is selected, generate end-detector mask
-    feature_output = np.zeros((win, win), np.uint8)
-    if feature == "end":
-        end_mask = np.zeros((win, win), np.uint8)
 
     # Define center of feature_output
     center = win // 2
@@ -42,19 +37,19 @@ def generate_feature(win, feature, angle=0, direction="clockwise", thickness=1):
     # Draw Top
     if feature in ("cross", "tee", "elbow", "radius", "diameter"):
         endpoint = rotate_point(origin, (center, 10), angle, direction)
-        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness)
     # Draw Bottom
     if feature in ("cross", "diameter"):
         endpoint = rotate_point(origin, (center, win-10), angle, direction)
-        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness)
     # Draw Left 
     if feature in ("cross", "tee"):
         endpoint = rotate_point(origin, (10, center), angle, direction)
-        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness)
     # Draw Right 
     if feature in ("cross", "tee", "elbow"):
         endpoint = rotate_point(origin, (win-10, center), angle, direction)
-        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness)
     
     return feature_output
 
@@ -104,5 +99,5 @@ for shape in features:
 
             # Write to Tiff Stack
             if save and not loop:
-                frames = [Image.fromarray(img) for img in img_stack]
+                frames = [Image.fromarray(img).convert('1') for img in img_stack]
                 frames[0].save(f"output/{shape}_{lw}_{dir}.tiff", save_all=True, append_images=frames[1:])
