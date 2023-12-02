@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
-def rotate_point(origin, point, angle):
+def rotate_point(origin, point, angle, direction):
+
+    assert direction in ("clockwise", "counterclockwise"), "Direction argument must either be 'clockwise' or 'counterclockwise'"
 
     ox, oy = origin
     px, py = point
@@ -10,17 +12,23 @@ def rotate_point(origin, point, angle):
     qx = ox + np.cos(angle) * (px - ox) - np.sin(angle) * (py - oy)
     qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
 
-    return int(qx), int(qy)
+    if direction == "clockwise":
+        return int(qx), int(qy)
+    elif direction == "counterclockwise":
+        return int(qx), int(qy)
 
 
 # Generates feature to animate
-def generate_feature(win, feature, angle=0, thickness=1):
+def generate_feature(win, feature, angle=0, direction="clockwise", thickness=1):
 
     # Check that feature is correctly specified
-    assert feature in ("cross", "tee", "elbow", "end"), "Feature must be one of 'cross', 'tee', 'elbow', or 'end'."
+    assert feature in ("cross", "tee", "elbow", "radius", "diameter"), "Feature must be one of 'cross', 'tee',  'radius', 'diameter'."
 
-    # Convert angle to radians
-    angle = np.deg2rad(angle)
+    # Convert angle to radians and set direction
+    if direction == "clockwise":
+        angle = np.deg2rad(angle)
+    elif direction == "counterclockwise":
+        angle = -np.deg2rad(angle)
     
     # Create feature_output matrix, if end feature is selected, generate end-detector mask
     feature_output = np.zeros((win, win), np.uint8)
@@ -32,56 +40,69 @@ def generate_feature(win, feature, angle=0, thickness=1):
     origin = (center, center)
 
     # Draw Top
-    if feature in ("cross", "tee", "end", "elbow"):
-        endpoint = rotate_point(origin, (center, 1), angle)
-        cv2.line(feature_output, origin, endpoint, (1, 1, 1), thickness)
+    if feature in ("cross", "tee", "elbow", "radius", "diameter"):
+        endpoint = rotate_point(origin, (center, 10), angle, direction)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
     # Draw Bottom
-    if feature == "cross":
-        endpoint = rotate_point(origin, (center, win-1), angle)
-        cv2.line(feature_output, origin, endpoint, (1, 1, 1), thickness)
+    if feature in ("cross", "diameter"):
+        endpoint = rotate_point(origin, (center, win-10), angle, direction)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
     # Draw Left 
     if feature in ("cross", "tee"):
-        endpoint = rotate_point(origin, (1, center), angle)
-        cv2.line(feature_output, origin, endpoint, (1, 1, 1), thickness)
+        endpoint = rotate_point(origin, (10, center), angle, direction)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
     # Draw Right 
     if feature in ("cross", "tee", "elbow"):
-        endpoint = rotate_point(origin, (win-1, center), angle)
-        cv2.line(feature_output, origin, endpoint, (1, 1, 1), thickness)
+        endpoint = rotate_point(origin, (win-10, center), angle, direction)
+        cv2.line(feature_output, origin, endpoint, (255,255,255), thickness, lineType=cv2.LINE_AA)
     
-    return feature_output*255
+    return feature_output
 
 
-# Feature generation starts here:
+'''
+Feature generation starts here:
+'''
 
 # Window Size
-win = 64
-# Starting Position
-deg = 0
-# Toggle animation
+win = 256
+
+# Feature List
+features = ["cross", "tee", "elbow", "radius", "diameter"]
+spin = ["clockwise", "counterclockwise"]
+lineweights = [1,2,4,8]
+
+# Toggle animation and preview
 animation = True
-preview = True
+preview = False
 loop = False
+save = True
 
-img_stack = []
+# Production loop
+for shape in features:
+    for lw in lineweights:
+        for dir in spin:
 
-if animation:
-    while deg in range(360):
-        feature = generate_feature(win, "cross", deg, 1)
-        img_stack.append(feature)
-        if preview:
-            cv2.imshow("Feature", feature)
-            cv2.waitKey(16)
-        if loop:
-            if deg == 360:
-                deg =  0
-            elif deg == 360:
-                break
-        deg += 1
-else:
-    feature = generate_feature(win, "cross", deg, 2)
-    cv2.imshow("Feature", feature)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+            # Clear angle and image stack
+            deg =  0  
+            img_stack = []
+            
+            # Spin feature and render
+            while deg < 360:
+                feature = generate_feature(win, shape, deg, direction=dir, thickness=lw)
+                img_stack.append(feature)
+                
+                # For preview visualization
+                if preview:
+                    cv2.imshow("Feature", feature)
+                    cv2.waitKey(1)
+                if loop:
+                    if deg == 360:
+                        deg =  0
 
-frames = [Image.fromarray(img) for img in img_stack]
-frames[0].save('stacked_images.tiff', save_all=True, append_images=frames[1:])
+                # Increment angle    
+                deg += 1
+
+            # Write to Tiff Stack
+            if save and not loop:
+                frames = [Image.fromarray(img) for img in img_stack]
+                frames[0].save(f"output/{shape}_{lw}_{dir}.tiff", save_all=True, append_images=frames[1:])
