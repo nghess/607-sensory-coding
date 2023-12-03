@@ -65,7 +65,7 @@ Feature generation starts here:
 '''
 
 # Window Size
-win = 256
+win = 128
 
 # Rotation step
 step = 2
@@ -82,7 +82,7 @@ loop = False
 save = True
 
 # Initialize Labels CSV
-open('labels.csv', 'w').close()
+open('dataset/labels.csv', 'w').close()
 
 # Production loop
 for shape in features:
@@ -111,9 +111,10 @@ for shape in features:
 
             # Write to Tiff Stack
             if save and not loop:
+                filename = f"{shape}_{lw}_{dir}.tiff"
                 frames = [Image.fromarray(img).convert('1') for img in img_stack]
-                frames[0].save(f"output/{shape}_{lw}_{dir}.tiff", save_all=True, append_images=frames[1:])
+                frames[0].save(f"dataset/{filename}", save_all=True, append_images=frames[1:])
 
             # Append labels to labels file
-            with open('labels.csv', 'a') as file:
-                file.write(f"'{dir}','{shape}'\n")
+            with open('dataset/labels.csv', 'a') as file:
+                file.write(f"{filename},{dir},{shape}\n")
