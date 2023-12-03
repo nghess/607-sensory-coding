@@ -21,8 +21,9 @@ def rotate_point(origin, point, angle, direction):
 # Generates feature to animate
 def generate_feature(win, feature, angle=0, direction="clockwise", thickness=1):
 
-    # Check that feature is correctly specified
+    # Check that feature is correctly specified, and check that win is 16x16 or larger 
     assert feature in ("cross", "tee", "elbow", "radius", "diameter"), "Feature must be one of 'cross', 'tee', 'radius', 'diameter'."
+    assert win >= 16, "Window size must be 16 or greater."
 
     # Convert angle to radians and set direction
     if direction == "clockwise":
@@ -34,6 +35,11 @@ def generate_feature(win, feature, angle=0, direction="clockwise", thickness=1):
     center = win // 2
     origin = (center, center)
 
+    # Initialize feature_output matrix
+    feature_output = np.zeros((win, win), np.uint8)
+
+    # Define padding around tips
+    win // 16
     # Draw Top
     if feature in ("cross", "tee", "elbow", "radius", "diameter"):
         endpoint = rotate_point(origin, (center, 10), angle, direction)
@@ -61,16 +67,22 @@ Feature generation starts here:
 # Window Size
 win = 256
 
+# Rotation step
+step = 2
+
 # Feature List
 features = ["cross", "tee", "elbow", "radius", "diameter"]
 spin = ["clockwise", "counterclockwise"]
-lineweights = [1,2,4,8]
+lineweights = [1,4,16]
 
 # Toggle animation and preview
 animation = True
 preview = False
 loop = False
 save = True
+
+# Initialize Labels CSV
+open('labels.csv', 'w').close()
 
 # Production loop
 for shape in features:
@@ -95,9 +107,13 @@ for shape in features:
                         deg =  0
 
                 # Increment angle    
-                deg += 1
+                deg += step
 
             # Write to Tiff Stack
             if save and not loop:
                 frames = [Image.fromarray(img).convert('1') for img in img_stack]
                 frames[0].save(f"output/{shape}_{lw}_{dir}.tiff", save_all=True, append_images=frames[1:])
+
+            # Append labels to labels file
+            with open('labels.csv', 'a') as file:
+                file.write(f"'{dir}','{shape}'\n")
