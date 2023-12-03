@@ -109,3 +109,27 @@ for epoch in range(50):
 
         loss.backward()
         optimizer.step()
+
+"""
+Test Model
+"""
+def test_model(model, test_loader, device):
+    model.eval()  # Set the model to evaluation mode
+    correct_rotation, correct_input, total = 0, 0, 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            rotation_labels, input_labels = labels[:, 0], labels[:, 1]
+
+            rotation_output, input_output = model(inputs)
+
+            _, predicted_rotation = torch.max(rotation_output.data, 1)
+            _, predicted_input = torch.max(input_output.data, 1)
+
+            total += labels.size(0)
+            correct_rotation += (predicted_rotation == rotation_labels).sum().item()
+            correct_input += (predicted_input == input_labels).sum().item()
+
+    print(f'Accuracy of the network on rotation prediction: {100 * correct_rotation / total}%')
+    print(f'Accuracy of the network on input type prediction: {100 * correct_input / total}%')
