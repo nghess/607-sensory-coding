@@ -22,15 +22,13 @@ for shape in features:
 
                 # Set scale
                 divisor = 2
-                scale_x = 1.0/divisor
-                scale_y = 1.0/divisor
+                rescale = 1.0/divisor
 
                 # Rescale imported tiff stack along x and y dimensions
-                feature_scaled = scipy.ndimage.zoom(tiff_stack, (1, scale_x, scale_y), order=3)
+                feature_scaled = scipy.ndimage.zoom(tiff_stack, (1, rescale, rescale), order=3)
 
                 """
-                Sliding window with a center no closer than feature_scaled.shape[0]//2
-                Point should move around psuedorandomnly
+                Random window with a center no closer than feature_scaled.shape[0]//2
                 """
                 ceil = tiff_stack.shape[1]//divisor
                 x = int(np.random.uniform(0,ceil))
@@ -38,12 +36,8 @@ for shape in features:
                 canvas[:,x:x+ceil,y:y+ceil] += feature_scaled
 
                 # Save the array as a TIFF stack  <----Need to convert to binary
-                out_fn = f"{shape}_{lw}_{dir}.tiff"
-                tifffile.imsave('dataset/scatter/{out_fn}', canvas)
-
-                # scattered_feature = [Image.fromarray(img).convert('1') for img in canvas[img,:,:]]
-                # scattered_feature[0].save(f"dataset/{filename}", save_all=True, append_images=frames[1:])
-
+                out_fn = f"{shape}_{lw}_{dir}_x{x}_y{y}_d{rescale}.tiff"
+                tifffile.imwrite(f"dataset/scatter/{out_fn}", canvas, mode='w')
 
 """
 Preview Output
@@ -54,11 +48,11 @@ Preview Output
 # cv2.destroyAllWindows()
 
 # Animated Preview
-deg = 0
-while deg in range(tiff_stack.shape[0]):
-    cv2.imshow("Feature", canvas[deg, :, :])
-    cv2.waitKey(1)
-    deg += 1
-    if deg == tiff_stack.shape[0]:
-        deg =  0
+# deg = 0
+# while deg in range(tiff_stack.shape[0]):
+#     cv2.imshow("Feature", canvas[deg, :, :])
+#     cv2.waitKey(1)
+#     deg += 1
+#     if deg == tiff_stack.shape[0]:
+#         deg =  0
     
