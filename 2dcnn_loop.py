@@ -138,11 +138,18 @@ num_classes_angle = 36  # Number of output classes for angle_class
 # Initialize model
 model = ConvLSTMNetwork(num_frames, num_classes_rotation, num_classes_angle)
 
+# Define loss functions for both classification tasks
+criterion_rotation = nn.CrossEntropyLoss()
+criterion_angle = nn.CrossEntropyLoss()
+
+# Define optimizer
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+
 """
-Train Model
+Check CUDA and load model to GPU
 """
 
-# CUDA Related
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
@@ -154,15 +161,12 @@ else:
     print("GPU **not** enabled!")   
 
 
-# Define loss functions for both classification tasks
-criterion_rotation = nn.CrossEntropyLoss()
-criterion_angle = nn.CrossEntropyLoss()
-
-# Define optimizer
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+"""
+Train Model
+"""
 
 # Training loop
-num_epochs = 10  # Adjust as needed
+num_epochs = 100
 
 for epoch in range(num_epochs):  # num_epochs is the number of epochs
     model.train()  # Set the model to training mode
@@ -202,13 +206,12 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
 Save Model
 """
 
-torch.save(model, '/content/drive/My Drive/607_sensory_coding/test_model_2.pt')
+torch.save(model, 'looped_2dcnn.pt')
 
 """
 Test
 """
 
-# Test label prediction performance
 def test_model(model, test_loader, device):
     model.eval()  # Set the model to evaluation mode
     correct_rotation, correct_input, total = 0, 0, 0
