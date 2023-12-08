@@ -1,0 +1,25 @@
+project:
+  type: website
+
+website:
+  title: "607 Sensory Coding"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Introduction
+      - href: model1.qmd
+        text: Model 1
+      - href: model2.qmd
+        text: Model 2
+    tools:
+      - icon: github
+        href: https://github.com/nghess/607-sensory-coding
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
