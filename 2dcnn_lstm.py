@@ -35,9 +35,6 @@ class TiffDataset(Dataset):
         image = image.unsqueeze(0)
         image = image.permute(1, 0, 2, 3)
 
-        # Print the shape of the image
-        # print(image.shape)
-
         # Apply any transformations
         if self.transform:
             image = self.transform(image)
@@ -48,7 +45,7 @@ class TiffDataset(Dataset):
 
         # Convert labels to numerical format
         rotation_class = 1 if self.annotations.iloc[index, 1] == 'clockwise' else 0
-        angle_class = int(self.annotations.iloc[index, 2])  # Maybe use int()
+        angle_class = int(self.annotations.iloc[index, 2])
 
         # Combine the labels (e.g., using one-hot encoding for the input class)
         label = torch.tensor([rotation_class, angle_class], dtype=torch.long)
@@ -65,8 +62,8 @@ test_size = len(dataset) - train_size
 train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
 # Create data loaders
-train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 """
 Define Model
@@ -77,8 +74,8 @@ conv1_out_ch = 4
 conv2_in_ch = conv1_out_ch
 conv2_out_ch = 8
 im_fc_in = conv2_out_ch * 128 * 128 # Channels * input height * input width
-im_fc_out = 256
-lstm_out = 128
+im_fc_out = 512
+lstm_out = 512
 
 class ConvLSTMNetwork(nn.Module):
     def __init__(self, num_frames, num_classes_rotation, num_classes_angle):
@@ -163,10 +160,10 @@ model.to(device)
 
 if torch.cuda.is_available():
     print(device)
-    print("GPU enabled")
+    print("GPU enabled!")
 else:
     print(device)
-    print("GPU **not** enabled")   
+    print("GPU **not** enabled!")   
 
 
 # Set Epochs
@@ -177,7 +174,7 @@ criterion_rotation = nn.CrossEntropyLoss()
 criterion_angle = nn.CrossEntropyLoss()
 
 # Define optimizer
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
 # Training loop
 num_epochs = 10  # Adjust as needed
@@ -207,7 +204,7 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
         loss_angle = criterion_angle(output_angle_last_step, labels_angle)
 
         # Combine the losses
-        loss = loss_rotation + loss_angle
+        loss = loss_rotation + (loss_angle *.25)
 
         # Backward pass and optimization
         loss.backward()  # Compute the gradients
@@ -219,3 +216,31 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
     average_loss = total_loss / len(train_loader)
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {average_loss:.4f}")
 
+
+"""
+Test
+"""
+
+# Test label prediction performance
+def test_model(model, test_loader, device):
+    model.eval()  # Set the model to evaluation mode
+    correct_rotation, correct_input, total = 0, 0, 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            rotation_labels, input_labels = labels[:, 0], labels[:, 1]
+
+            rotation_output, input_output = model(inputs)
+
+            _, predicted_rotation = torch.max(rotation_output.data, 1)
+            _, predicted_input = torch.max(input_output.data, 1)
+
+            total += labels.size(0)
+            correct_rotation += (predicted_rotation == rotation_labels).sum().item()
+            correct_input += (predicted_input == input_labels).sum().item()
+
+    print(f'Accuracy of the network on rotation prediction: {100 * correct_rotation / total}%')
+    print(f'Accuracy of the network on input type prediction: {100 * correct_input / total}%')
+
+test_model(model, test_loader, device)

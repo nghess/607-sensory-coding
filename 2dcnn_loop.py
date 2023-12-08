@@ -10,7 +10,11 @@ import tifffile as tiff
 import pandas as pd
 import os
 
-# Define dataset: Tiff stack with two labels
+
+"""
+Data Wrangling
+"""
+
 class TiffDataset(Dataset):
     def __init__(self, csv_file, root_dir, transform=None):
         self.annotations = pd.read_csv(csv_file)
@@ -32,7 +36,7 @@ class TiffDataset(Dataset):
         image = image.permute(1, 0, 2, 3)
 
         # Print the shape of the image
-        print(image.shape)
+        # print(image.shape)
 
         # Apply any transformations
         if self.transform:
@@ -44,7 +48,7 @@ class TiffDataset(Dataset):
 
         # Convert labels to numerical format
         rotation_class = 1 if self.annotations.iloc[index, 1] == 'clockwise' else 0
-        angle_class = int(self.annotations.iloc[index, 2])  # Maybe use int()
+        angle_class = int(self.annotations.iloc[index, 2])
 
         # Combine the labels (e.g., using one-hot encoding for the input class)
         label = torch.tensor([rotation_class, angle_class], dtype=torch.long)
@@ -61,41 +65,42 @@ test_size = len(dataset) - train_size
 train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
 # Create data loaders
-train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 """
 Define Model
 """
+# Input/Output Arguments
+conv1_in_ch = 1
+conv1_out_ch = 4
+conv2_in_ch = conv1_out_ch
+conv2_out_ch = 8
+im_fc_in = conv2_out_ch * 128 * 128 # Channels * input height * input width
+im_fc_out = 512
+lstm_out = 512
 
 class ConvLSTMNetwork(nn.Module):
     def __init__(self, num_frames, num_classes_rotation, num_classes_angle):
         super(ConvLSTMNetwork, self).__init__()
 
         # First Convolutional Layer
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=3, padding=1)
         
         # Second Convolutional Layer
-        self.conv2 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=5, padding=2)
 
         # Dimensionality reduction layer
-        self.intermediate_fc = nn.Linear(262144, 256)
-
-        # LSTM Layer
-        self.lstm = nn.LSTM(input_size=256, hidden_size=256, num_layers=1, batch_first=True)
+        self.intermediate_fc = nn.Linear(im_fc_in, im_fc_out)
 
         # Fully Connected Layers for classification
-        self.fc_rotation = nn.Linear(256, num_classes_rotation)
-        self.fc_angle = nn.Linear(256, num_classes_angle)
-
-        # Pooling
-        #self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
+        self.fc_rotation = nn.Linear(655360, num_classes_rotation)
+        self.fc_angle = nn.Linear(655360, num_classes_angle)
 
         # Activation Functions
         self.relu = nn.ReLU()
 
     def forward(self, x):
-        # Reshape the input data to have 5 frames as a sequence
         # batch_size=4, num_frames=5, channels=1, height=128, width=128
         batch_size, num_frames, channels, height, width = x.size()
 
@@ -113,20 +118,11 @@ class ConvLSTMNetwork(nn.Module):
             out = out.view(batch_size, -1)  # Flatten each frame's output
             #print(f"conv2 output:{out.shape}")
 
-            # Apply an intermediate linear layer for further reduction
-            out = self.intermediate_fc(out)
-            #print(f"intermediate fc output:{out.shape}")
-
             # Append output to list
             conv_outputs.append(out)
 
-        # Concatenate the conv outputs to form a sequence for LSTM
-        lstm_input = torch.stack(conv_outputs, dim=1)
-        #print(f"lstm_input:{lstm_input.shape}")
-
-        # LSTM Layer
-        x, _ = self.lstm(lstm_input)
-        #print(f"lstm_output:{x.shape}")      
+        # Concatenate the outputs along a specific dimension (e.g., 1)
+        x = torch.cat(conv_outputs, dim=1)
 
         # Fully Connected Layers for classification
         output_rotation = self.fc_rotation(x)
@@ -146,7 +142,17 @@ model = ConvLSTMNetwork(num_frames, num_classes_rotation, num_classes_angle)
 Train Model
 """
 
-num_epochs = 1
+# CUDA Related
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
+if torch.cuda.is_available():
+    print(device)
+    print("GPU enabled!")
+else:
+    print(device)
+    print("GPU **not** enabled!")   
+
 
 # Define loss functions for both classification tasks
 criterion_rotation = nn.CrossEntropyLoss()
@@ -157,9 +163,6 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
 num_epochs = 10  # Adjust as needed
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
-
 
 for epoch in range(num_epochs):  # num_epochs is the number of epochs
     model.train()  # Set the model to training mode
@@ -173,28 +176,16 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
         # Forward pass
         output_rotation, output_angle = model(inputs)
 
-        # Use only the last timestep's output for loss calculation
-        output_rotation_last_step = output_rotation[:, -1, :]  # Shape: [batch_size, num_classes_rotation]
-        output_angle_last_step = output_angle[:, -1, :]  # Shape: [batch_size, num_classes_angle]
-
         # Separate the labels for rotation and angle
         labels_rotation = labels[:, 0]
         labels_angle = labels[:, 1]
 
         # Calculate losses for each task
-        loss_rotation = criterion_rotation(output_rotation_last_step, labels_rotation)
-        loss_angle = criterion_angle(output_angle_last_step, labels_angle)
-
-        # Calculate losses for each task
-        # print(f"output_rotation:{output_rotation.shape}")
-        # print(f"labels_rotation:{labels_rotation.shape}")
-        # print(labels_rotation)
-        # print(output_rotation)
-        # loss_rotation = criterion_rotation(output_rotation, labels_rotation)
-        # loss_angle = criterion_angle(output_angle, labels_angle)
+        loss_rotation = criterion_rotation(output_rotation, labels_rotation)
+        loss_angle = criterion_angle(output_angle, labels_angle)
 
         # Combine the losses
-        loss = loss_rotation + loss_angle
+        loss = loss_rotation + (loss_angle*.25)
 
         # Backward pass and optimization
         loss.backward()  # Compute the gradients
@@ -206,3 +197,37 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
     average_loss = total_loss / len(train_loader)
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {average_loss:.4f}")
 
+
+"""
+Save Model
+"""
+
+torch.save(model, '/content/drive/My Drive/607_sensory_coding/test_model_2.pt')
+
+"""
+Test
+"""
+
+# Test label prediction performance
+def test_model(model, test_loader, device):
+    model.eval()  # Set the model to evaluation mode
+    correct_rotation, correct_input, total = 0, 0, 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+            rotation_labels, input_labels = labels[:, 0], labels[:, 1]
+
+            rotation_output, input_output = model(inputs)
+
+            _, predicted_rotation = torch.max(rotation_output.data, 1)
+            _, predicted_input = torch.max(input_output.data, 1)
+
+            total += labels.size(0)
+            correct_rotation += (predicted_rotation == rotation_labels).sum().item()
+            correct_input += (predicted_input == input_labels).sum().item()
+
+    print(f'Accuracy of the network on rotation prediction: {100 * correct_rotation / total}%')
+    print(f'Accuracy of the network on input type prediction: {100 * correct_input / total}%')
+
+test_model(model, test_loader, device)
