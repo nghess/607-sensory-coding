@@ -75,8 +75,9 @@ Define Model
 conv1_in_ch = 1
 conv1_out_ch = 4
 conv2_in_ch = conv1_out_ch
-conv2_out_ch = 8
+conv2_out_ch = 16
 im_fc_in = conv2_out_ch * 128 * 128 # Channels * input height * input width
+fc_in = conv2_out_ch * 128 * 128 * 5
 im_fc_out = 512
 lstm_out = 512
 
@@ -90,12 +91,15 @@ class ConvLSTMNetwork(nn.Module):
         # Second Convolutional Layer
         self.conv2 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=5, padding=2)
 
+        # Second Convolutional Layer
+        self.conv3 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=7, padding=3)
+
         # Dimensionality reduction layer
         self.intermediate_fc = nn.Linear(im_fc_in, im_fc_out)
 
         # Fully Connected Layers for classification
-        self.fc_rotation = nn.Linear(655360, num_classes_rotation)
-        self.fc_angle = nn.Linear(655360, num_classes_angle)
+        self.fc_rotation = nn.Linear(fc_in, num_classes_rotation)
+        self.fc_angle = nn.Linear(fc_in, num_classes_angle)
 
         # Activation Functions
         self.relu = nn.ReLU()
@@ -113,9 +117,10 @@ class ConvLSTMNetwork(nn.Module):
             # Pass the frame through convolutional layers
             out = self.relu(self.conv1(frame))
             out = self.relu(self.conv2(out))
+            out = self.relu(self.conv3(out))
             
-            # Flatten the output for LSTM layer
-            out = out.view(batch_size, -1)  # Flatten each frame's output
+            # Flatten the output for FC layers
+            out = out.view(batch_size, -1) 
             #print(f"conv2 output:{out.shape}")
 
             # Append output to list
@@ -166,7 +171,8 @@ Train Model
 """
 
 # Training loop
-num_epochs = 100
+num_epochs = 300
+running_loss = []
 
 for epoch in range(num_epochs):  # num_epochs is the number of epochs
     model.train()  # Set the model to training mode
@@ -199,14 +205,22 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
 
     # Print average loss for the epoch
     average_loss = total_loss / len(train_loader)
+    running_loss.append(average_loss)
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {average_loss:.4f}")
 
 
 """
 Save Model
 """
+model_name = "looped_2dcnn_3layer"
+torch.save(model, f"{model_name}.pt")
 
-torch.save(model, 'looped_2dcnn.pt')
+with open(f"{model_name}.txt", 'a') as file:
+    # Iterate over the list
+    for item in running_loss:
+        # Write each item to the file followed by a newline
+        file.write(f"{item},\n")
+
 
 """
 Test

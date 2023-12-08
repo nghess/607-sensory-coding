@@ -9,4 +9,6 @@
 	a.) the first pass certainly shows a central axis  
 
 
+4.) What would one big kernel get us?
+
 
