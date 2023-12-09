@@ -184,7 +184,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>For my 607 Sensory Coding Project, I took a first stab at building a biologically inspired neural network modeling the visual system. As my primary interest is in the computation and perception of motion, I sought to design an architecture that mimics some of the properties of primate area MT. The models were trained in two tasks: Judgment of object orientation, and judgment object rotation direction. To teach the networks these tasks, I created a synthetic dataset based on an imagined psychophysical task in which the subject would judge rotation direction and average orientation (in degrees) of a short animation of a rotating bar.</p>
-<p>I had two specific aims this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.</p>
+<p>I had two primary goals this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/mt_rfs.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure 1: Direction-selective Receptive Fields. One goal of this project was to train a convolutional neural network to learn kernels with similar properties to these RFs.</figcaption>
+</figure>
+</div>
 </section>
 <section id="successes" class="level2">
 <h2 class="anchored" data-anchor-id="successes">Successes</h2>
@@ -200,7 +206,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="task" class="level2">
 <h2 class="anchored" data-anchor-id="task">Task</h2>
 <p>Initially, I trained my networks to detect an object type (cross, elbow, tee, or line) and a rotation direction (clockwise or counterclockwise). The rotating stimuli filled the frame, and fed to the network 360 degrees at a time. This proved to be far too easy a task for the 3DCNN, so I got greedy and created a new set of stimulus images comprised of short rotating bars at one of 81 possible locations in the image. Rather than a full 360 degree turn, these bars only turned 10 degrees per stimulus, so that the network could be trained to predict their average orientation.</p>
-<p>This task proved to be too difficult for my simple architecture, while I could get decent performance on rotation direction, 36 possible orientations were too much for the simple networks. I was able to get predictions quite above chance, but only around 50% accuracy.</p>
+<p>This task proved to be too difficult for my simple architecture, while I could get decent performance on rotation direction, 36 possible orientations were too much for the simple networks. I was able to get the model to perform above chance, but never above ~20% accuracy.</p>
 <p>I’m quite sure that the task is learnable, but not with the simple architecture I used in this project. I think that a combination of approaches should yield an accurate model: first I need to employ additional layers, second I need to scale my kernels to better fit the size of the features they are being trained on, and third, I need to improve my loss functions.</p>
 <section id="on-loss-functions" class="level3">
 <h3 class="anchored" data-anchor-id="on-loss-functions">On Loss Functions</h3>

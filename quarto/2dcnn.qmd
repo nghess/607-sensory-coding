@@ -25,4 +25,4 @@ Luckily, in the course of preparing the 2D CNN output for the LSTM layer, I deve
 ## Results
 Largely due to the difficult orientation classification task, I was unable to get the 2DCNN to perform well. While the kernels show some structure, they are clearly much less refined than those in the 3DCNN (which was used on a simpler task).  
 
-![A small selection of kernels learned by the 2DCNN. While there is some emerging structure, it doesn't capture features of the stimuli well.](images/2d_kernels.png)
+![Figure 3: A small selection of kernels learned by the 2DCNN. While there is some emerging structure, it doesn't capture features of the stimuli well.](images/2d_kernels.png)
