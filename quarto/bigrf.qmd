@@ -2,7 +2,7 @@
 title: "Big Receptive Field"
 ---
 
-Throughout the project, I wanted to find a way to train a model to learn a convolutional kernel (or collection of kernels) that approximated the sparse-but-uniform structure of orientation-selective cortical columns in MT. As 607 Sensory Coding was about mapping, I was motivated to create a model that "mapped" the entire stimulus space.
+Throughout the project, I wanted to find a way to train a model to learn a convolutional kernel (or collection of kernels) that approximated the tiled structure of orientation-selective cortical columns in MT. As 607 Sensory Coding was about mapping, I was motivated to create a model that "mapped" the entire stimulus space.
 
 Typically, CNNs learn a number of kernel and then cycle through them as they slide across a stimulus. While the results of this process share properties with biological visual systems, there is no structure retinotopic or otherwise, that fixes a particular kernel to a particular location in feature space.
 
