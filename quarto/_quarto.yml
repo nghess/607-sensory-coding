@@ -7,10 +7,12 @@ website:
     left:
       - href: index.qmd
         text: Introduction
-      - href: model1.qmd
-        text: Model 1
-      - href: model2.qmd
-        text: Model 2
+      - href: 2dcnn.qmd
+        text: 2DCNN
+      - href: 3dcnn.qmd
+        text: 3DCNN
+      - href: bigrf.qmd
+        text: bigRF
     tools:
       - icon: github
         href: https://github.com/nghess/607-sensory-coding

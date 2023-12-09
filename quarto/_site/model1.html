@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>607 Sensory Coding - 607 Sensory Coding Final Project</title>
+<title>607 Sensory Coding - Model 1: Looped 2DCNN</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -93,6 +59,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="styles.css">
@@ -116,20 +85,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="./index.html" rel="" target="">
  <span class="menu-text">Introduction</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./2dcnn.html" rel="" target="">
+    <a class="nav-link" href="./2dcnn.qmd" rel="" target="">
  <span class="menu-text">2DCNN</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./3dcnn.html" rel="" target="">
- <span class="menu-text">3DCNN</span></a>
+    <a class="nav-link" href="./lstm.qmd" rel="" target="">
+ <span class="menu-text">2DCNN+LSTM</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./bigrf.html" rel="" target="">
- <span class="menu-text">bigRF</span></a>
+    <a class="nav-link" href="./3dcnn.qmd" rel="" target="">
+ <span class="menu-text">3DCNN</span></a>
   </li>  
 </ul>
             <div class="quarto-navbar-tools ms-auto">
@@ -144,29 +113,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#successes" id="toc-successes" class="nav-link" data-scroll-target="#successes">Successes</a></li>
-  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a>
-  <ul class="collapse">
-  <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a></li>
-  </ul></li>
-  <li><a href="#task" id="toc-task" class="nav-link" data-scroll-target="#task">Task</a>
-  <ul class="collapse">
-  <li><a href="#on-loss-functions" id="toc-on-loss-functions" class="nav-link" data-scroll-target="#on-loss-functions">On Loss Functions</a></li>
-  </ul></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">607 Sensory Coding Final Project</h1>
+<h1 class="title">Model 1: Looped 2DCNN</h1>
 </div>
 
 
@@ -181,43 +135,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>For my 607 Sensory Coding Project, I took a first stab at building a biologically inspired neural network modeling the visual system. As my primary interest is in the computation and perception of motion, I sought to design an architecture that mimics some of the properties of primate area MT. The models were trained in two tasks: Judgment of object orientation, and judgment object rotation direction. To teach the networks these tasks, I created a synthetic dataset based on an imagined psychophysical task in which the subject would judge rotation direction and average orientation (in degrees) of a short animation of a rotating bar.</p>
-<p>I had two specific aims this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.</p>
-</section>
-<section id="successes" class="level2">
-<h2 class="anchored" data-anchor-id="successes">Successes</h2>
-<p>The networks were able to learn kernels that mimic the propery of direction-selective neurons, and I was able to generate a crude approximation of columnar structure by training a network that used single large kernels to convolved over the input, rather than small kernels traversing the image.</p>
-</section>
-<section id="limitations" class="level2">
-<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
-<section id="mapping" class="level3">
-<h3 class="anchored" data-anchor-id="mapping">Mapping</h3>
-<p>As mentioned above, CNNs typically work by sliding a series of small kernels across an input image. The kernels learned by the network do take on similarities to receptive fields in the visual system, however they fail to capture the idea of a retinotopic map. Maps in the visual system are fixed, and visual stimuli “move across” them, which is precisely the opposite of how CNNs work.</p>
-</section>
-</section>
-<section id="task" class="level2">
-<h2 class="anchored" data-anchor-id="task">Task</h2>
-<p>Initially, I trained my networks to detect an object type (cross, elbow, tee, or line) and a rotation direction (clockwise or counterclockwise). The rotating stimuli filled the frame, and fed to the network 360 degrees at a time. This proved to be far too easy a task for the 3DCNN, so I got greedy and created a new set of stimulus images comprised of short rotating bars at one of 81 possible locations in the image. Rather than a full 360 degree turn, these bars only turned 10 degrees per stimulus, so that the network could be trained to predict their average orientation.</p>
-<p>This task proved to be too difficult for my simple architecture, while I could get decent performance on rotation direction, 36 possible orientations were too much for the simple networks. I was able to get predictions quite above chance, but only around 50% accuracy.</p>
-<p>I’m quite sure that the task is learnable, but not with the simple architecture I used in this project. I think that a combination of approaches should yield an accurate model: first I need to employ additional layers, second I need to scale my kernels to better fit the size of the features they are being trained on, and third, I need to improve my loss functions.</p>
-<section id="on-loss-functions" class="level3">
-<h3 class="anchored" data-anchor-id="on-loss-functions">On Loss Functions</h3>
-<p>I crippled my model by writing a loss function that weighed the accuracy of two predictions equally. If both predictions are easy, this isn’t a problem. But when I tried to train the model to predict both rotation direction (easy) and global orientation (hard) with their loss averaged, the model was unable to learn. My thought had been that training on both tasks at once would produce receptive fields that learned to specialize in one task or another. However the network has unable to get traction on either task.</p>
-<p>Eventually it occurred to me that if I were to bias the network to learn one task over the other, it might help. By opting to weigh the rotation classification loss more heavily than the orientation loss, I was able to get the model learning again. Of course, this was the easy way out. –I believe another approach that would likely yield differentiated RFs and maintain better prediction accuracy for orientation would be to employ dropout, or to toggle between loss functions every other epoch. Either way, the more classes one has to predict on, the more deeper the network needs to be.</p>
-<p>Below are classification results at loss functions weighing one task over the other. Clearly, orientation classification was the more difficult task of the two.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Network <span class="cf">with</span> loss <span class="op">=</span> rotation_loss <span class="op">+</span> orientation_loss<span class="op">/</span><span class="dv">4</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>Accuracy of the network on rotation prediction: <span class="fl">89.53</span><span class="op">%</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>Accuracy of the network on orientation prediction: <span class="fl">3.13</span><span class="op">%</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>Network <span class="cf">with</span> loss <span class="op">=</span> rotation_loss<span class="op">*</span><span class="dv">0</span> <span class="op">+</span> orientation_loss</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>Accuracy of the network on rotation prediction: <span class="fl">50.42</span><span class="op">%</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>Accuracy of the network on orientation prediction: <span class="fl">4.26</span><span class="op">%</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+Stimulus --&gt; 2DConv
+2DConv --&gt; |loop over each frame| 2DConv
+2DConv --&gt; fc1["Fully Connected Layer"]
+fc1 --&gt; fc_r["Rotation Output"]
+fc1 --&gt; fc_o["Orientation Output"]
+</pre>
+</div>
+</div>
+</div>
+</div>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

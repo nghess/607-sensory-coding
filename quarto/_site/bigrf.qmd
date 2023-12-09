@@ -1,0 +1,14 @@
+---
+title: "Model 2: 2DCNN + LSTM"
+---
+
+```{mermaid}
+flowchart TD
+Stimulus --> 2DConv
+2DConv --> |loop over each frame| 2DConv
+2DConv --> fc1["Fully Connected Layer"]
+fc1 --> lstm["LSTM Layer"]
+lstm --> fc_r["Rotation Output"]
+lstm --> fc_o["Orientation Output"]
+```
+

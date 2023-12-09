@@ -1,0 +1,23 @@
+---
+title: "Model 2: Looped 2DCNN"
+---
+
+```{mermaid}
+flowchart TD
+Stimulus --> 2DConv
+2DConv --> |loop over each frame| 2DConv
+2DConv --> fc1["Fully Connected Layer"]
+fc1 --> fc_r["Rotation Output"]
+fc1 --> fc_o["Orientation Output"]
+```
+
+## Motivation
+Once I finished the 3DCNN, the project became a balancing act between obtaining good classification results and maintaining a relationship to the primate visual system. I began with the [3DCNN](3dcnn.qmd) architecture that obtained good classification results, but over the course of the project decided that the kernels learned by the 3D CNN abstracted the problem to a degree that the learned kernels didn’t represent biological receptive fields adequately. 
+
+Considering that the retina captures 2-dimensional information, I opted to switch to a 2d convolutional architecture and add an LSTM layer separately to keep track of differences between contiguous animation frames. My hope was that this would enable the network to learn kernels that resembled those found in MT+.
+
+I did get the 2DCNN-LSTM model working, and that was a great leanring experience. Unfortunately LSTM is very compute-hungry, and despite getting a working model, I didn’t have enough time to properly train and test it. 
+
+Luckily, in the course of preparing the 2D CNN output for the LSTM layer, I developed an architecture that allowed 2D CNNs to learn temporal features on their own. I put 2d convolution layers inside a loop, concatenated each layer into an array and flattened the result for each 5-frame stack, then predicted on that output. This architecture is fairly computationally efficient, and more accurately models 2D inputs flowing through the visual stream.
+
+## Results

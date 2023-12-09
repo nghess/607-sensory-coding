@@ -1,0 +1,11 @@
+---
+title: "Model 3: 3DCNN"
+---
+```{mermaid}
+flowchart TD
+Stimulus --> 3DConv
+3DConv -->
+2DConv --> fc1["Fully Connected Layer"]
+fc1 --> fc_r["Rotation Output"]
+fc1 --> fc_o["Orientation Output"]
+```

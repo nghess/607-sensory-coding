@@ -2,6 +2,39 @@
 title: "607 Sensory Coding Final Project"
 ---
 
-This is a Quarto website.
+## Introduction
+For my 607 Sensory Coding Project, I took a first stab at building a biologically inspired neural network modeling the visual system. As my primary interest is in the computation and perception of motion, I sought to design an architecture that mimics some of the properties of primate area MT. 
+The models were trained in two tasks: Judgment of object orientation, and judgment object rotation direction. To teach the networks these tasks, I created a synthetic dataset based on an imagined psychophysical task in which the subject would judge rotation direction and average orientation (in degrees) of a short animation of a rotating bar.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+I had two specific aims this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.
+
+## Successes
+The networks were able to learn kernels that mimic the propery of direction-selective neurons, and I was able to generate a crude approximation of columnar structure by training a network that used single large kernels to convolved over the input, rather than small kernels traversing the image.
+
+## Limitations
+### Mapping
+As mentioned above, CNNs typically work by sliding a series of small kernels across an input image. The kernels learned by the network do take on similarities to receptive fields in the visual system, however they fail to capture the idea of a retinotopic map. Maps in the visual system are fixed, and visual stimuli "move across" them, which is precisely the opposite of how CNNs work.
+
+## Task
+Initially, I trained my networks to detect an object type (cross, elbow, tee, or line) and a rotation direction (clockwise or counterclockwise). The rotating stimuli filled the frame, and fed to the network 360 degrees at a time. This proved to be far too easy a task for the 3DCNN, so I got greedy and created a new set of stimulus images comprised of short rotating bars at one of 81 possible locations in the image. Rather than a full 360 degree turn, these bars only turned 10 degrees per stimulus, so that the network could be trained to predict their average orientation.
+
+This task proved to be too difficult for my simple architecture, while I could get decent performance on rotation direction, 36 possible orientations were too much for the simple networks. I was able to get predictions quite above chance, but only around 50% accuracy.
+
+I'm quite sure that the task is learnable, but not with the simple architecture I used in this project. I think that a combination of approaches should yield an accurate model: first I need to employ additional layers, second I need to scale my kernels to better fit the size of the features they are being trained on, and third, I need to improve my loss functions.
+
+### On Loss Functions
+I crippled my model by writing a loss function that weighed the accuracy of two predictions equally. If both predictions are easy, this isn't a problem. But when I tried to train the model to predict both rotation direction (easy) and global orientation (hard) with their loss averaged, the model was unable to learn. My thought had been that training on both tasks at once would produce receptive fields that learned to specialize in one task or another. However the network has unable to get traction on either task. 
+
+Eventually it occurred to me that if I were to bias the network to learn one task over the other, it might help. By opting to weigh the rotation classification loss more heavily than the orientation loss, I was able to get the model learning again. Of course, this was the easy way out. –I believe another approach that would likely yield differentiated RFs and maintain better prediction accuracy for orientation would be to employ dropout, or to toggle between loss functions every other epoch. Either way, the more classes one has to predict on, the more deeper the network needs to be.
+
+Below are classification results at loss functions weighing one task over the other. Clearly, orientation classification was the more difficult task of the two.
+
+```python
+Network with loss = rotation_loss + orientation_loss/4
+Accuracy of the network on rotation prediction: 89.53%
+Accuracy of the network on orientation prediction: 3.13%
+
+Network with loss = rotation_loss*0 + orientation_loss
+Accuracy of the network on rotation prediction: 50.42%
+Accuracy of the network on orientation prediction: 4.26%
+```

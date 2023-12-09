@@ -65,8 +65,8 @@ test_size = len(dataset) - train_size
 train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
 # Create data loaders
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
 
 """
 Define Model
@@ -75,7 +75,7 @@ Define Model
 conv1_in_ch = 1
 conv1_out_ch = 4
 conv2_in_ch = conv1_out_ch
-conv2_out_ch = 16
+conv2_out_ch = 8
 im_fc_in = conv2_out_ch * 128 * 128 # Channels * input height * input width
 fc_in = conv2_out_ch * 128 * 128 * 5
 im_fc_out = 512
@@ -86,13 +86,13 @@ class ConvLSTMNetwork(nn.Module):
         super(ConvLSTMNetwork, self).__init__()
 
         # First Convolutional Layer
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=4, kernel_size=5, padding=2)
         
         # Second Convolutional Layer
-        self.conv2 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=5, padding=2)
+        #self.conv2 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=5, padding=2)
 
-        # Second Convolutional Layer
-        self.conv3 = nn.Conv2d(in_channels=8, out_channels=16, kernel_size=7, padding=3)
+        # Third Convolutional Layer
+        self.conv3 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=11, padding=5)
 
         # Dimensionality reduction layer
         self.intermediate_fc = nn.Linear(im_fc_in, im_fc_out)
@@ -116,7 +116,7 @@ class ConvLSTMNetwork(nn.Module):
             
             # Pass the frame through convolutional layers
             out = self.relu(self.conv1(frame))
-            out = self.relu(self.conv2(out))
+            #out = self.relu(self.conv2(out))
             out = self.relu(self.conv3(out))
             
             # Flatten the output for FC layers
@@ -171,12 +171,18 @@ Train Model
 """
 
 # Training loop
-num_epochs = 300
+num_epochs = 100
 running_loss = []
 
 for epoch in range(num_epochs):  # num_epochs is the number of epochs
     model.train()  # Set the model to training mode
     total_loss = 0
+
+    # Schedule learning rate optimizer
+    if epoch >= num_epochs/10:
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+    else:
+        optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
     for inputs, labels in train_loader:
         inputs, labels = inputs.to(device), labels.to(device)  # Move data to the same device as the model
@@ -195,7 +201,7 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
         loss_angle = criterion_angle(output_angle, labels_angle)
 
         # Combine the losses
-        loss = loss_rotation + (loss_angle*.25)
+        loss = (loss_rotation*0) + (loss_angle)
 
         # Backward pass and optimization
         loss.backward()  # Compute the gradients
@@ -212,7 +218,7 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
 """
 Save Model
 """
-model_name = "looped_2dcnn_3layer"
+model_name = "looped_2dcnn_angleonly"
 torch.save(model, f"{model_name}.pt")
 
 with open(f"{model_name}.txt", 'a') as file:
