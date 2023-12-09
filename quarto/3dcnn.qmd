@@ -7,11 +7,13 @@ flowchart TD
 Stimulus --> 3DConv
 3DConv --> fc1["Fully Connected Layer"]
 fc1 --> fc_r["Rotation Output"]
-fc1 --> fc_o["Orientation Output"]
+fc1 --> fc_o["Shape Output"]
 ```
 
 ## Motivation
-I started the project using a 3D CNN architecture that obtained good classification results on rotation direction and stimulus type, but over the course of the project decided that a 3D CNN abstracted the problem to a degree that the learned kernels didn’t represent biological receptive fields adequately. Considering that the retina captures 2-dimensional information, and topological maps in cortex are essentially 2D, I switched to a 2D architecture ([2DCNN](2dcnn.qmd)) that employed looping to train the convolutional layers on the temporal dimension of the stimuli.
+I started the project using a 3D CNN architecture that obtained good classification results on rotation direction and stimulus shape, but over the course of the project decided that a 3D CNN abstracted the problem to a degree that the learned kernels didn’t represent biological receptive fields adequately. Considering that the retina captures 2-dimensional information, and topological maps in cortex are essentially 2D, I switched to a 2D architecture ([2DCNN](2dcnn.qmd)) that employed looping to train the convolutional layers on the temporal dimension of the stimuli.
+
+[3DCNN on GitHub](https://github.com/nghess/607-sensory-coding/blob/main/3dcnn_example.ipynb)
 
 ## Results
 The 3DCNN performed very well, and could reach >98% accuracy on both classification tasks in 100 epochs or fewer. While they may not be biomimetic, 3DCNNs do an excellent job learning features of 3-dimensional data.

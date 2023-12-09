@@ -110,7 +110,13 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#results" id="toc-results" class="nav-link active" data-scroll-target="#results">Results</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -135,9 +141,18 @@ ul.task-list li input[type="checkbox"] {
 <p>Throughout the project, I wanted to find a way to train a model to learn a convolutional kernel (or collection of kernels) that approximated the sparse-but-uniform structure of orientation-selective cortical columns in MT. As 607 Sensory Coding was about mapping, I was motivated to create a model that “mapped” the entire stimulus space.</p>
 <p>Typically, CNNs learn a number of kernel and then cycle through them as they slide across a stimulus. While the results of this process share properties with biological visual systems, there is no structure retinotopic or otherwise, that fixes a particular kernel to a particular location in feature space.</p>
 <p>In the course of the project, I had a moment of clarity as to why orientation-selective cortical columns are so nicely interspersed with each other: maximum coverage of the possible feature space. While they are fixed, cortical columns of a particular selectivity span the entire retinotopic map. This coverage is sparser than in a CNN, where every kernel sees every pixel in a stimulus, but the idea is the same.</p>
-<p>Based on this thought, I modified my 3DCNN so that the second convolutional layer had a single large kernel that matched the stimulus size exactly. This kernel never moved across the image, rather it sat in place while the stimuli under it changed. The resulting model produced both good classification accuracy and a column-like structure in the kernel.</p>
+<p>Based on this thought, I modified my 3DCNN so that the second convolutional layer had a single large kernel that matched the stimulus size exactly. This kernel never moved across the image, rather it sat in place while the stimuli under it changed.</p>
+<section id="results" class="level2">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/big_rf_grain.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Note: this is one 16 channel layer of 8 total, each layer shows variations in grain structure.</figcaption>
+</figure>
+</div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

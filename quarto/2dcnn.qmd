@@ -20,4 +20,9 @@ I did get the 2DCNN-LSTM model working, and that was a great leanring experience
 
 Luckily, in the course of preparing the 2D CNN output for the LSTM layer, I developed an architecture that allowed 2D CNNs to learn temporal features on their own. I put 2d convolution layers inside a loop, concatenated each layer into an array and flattened the result for each 5-frame stack, then predicted on that output. This architecture is fairly computationally efficient, and more accurately models 2D inputs flowing through the visual stream.
 
+[2DCNN on GitHub](https://github.com/nghess/607-sensory-coding/blob/main/2dcnn_loop.py)
+
 ## Results
+Largely due to the difficult orientation classification task, I was unable to get the 2DCNN to perform well. While the kernels show some structure, they are clearly much less refined than those in the 3DCNN (which was used on a simpler task).  
+
+![A small selection of kernels learned by the 2DCNN. While there is some emerging structure, it doesn't capture features of the stimuli well.](images/2d_kernels.png)

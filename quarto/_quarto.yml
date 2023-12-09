@@ -8,10 +8,10 @@ website:
     left:
       - href: index.qmd
         text: Introduction
-      - href: 2dcnn.qmd
-        text: 2DCNN
       - href: 3dcnn.qmd
         text: 3DCNN
+      - href: 2dcnn.qmd
+        text: 2DCNN
       - href: bigrf.qmd
         text: bigRF
     tools:
