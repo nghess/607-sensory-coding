@@ -8,7 +8,7 @@ The models were trained in two tasks: Judgment of object orientation, and judgme
 
 I had two primary goals this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.
 
-![Figure 1: Direction-selective Receptive Fields. One goal of this project was to train a convolutional neural network to learn kernels with similar properties to these RFs.](images/mt_rfs.png)
+![Figure 1: Direction-sensitive Receptive Fields (RFs). One goal of this project was to train a convolutional neural network to learn kernels with similar properties to these RFs.](images/mt_rfs.png)
 
 ## Successes
 The networks were able to learn kernels that mimic some properties of direction-selective neurons, and I was able to generate a crude approximation of columnar structure by training a network that used single large kernels to convolved over the input, rather than small kernels traversing the image.
