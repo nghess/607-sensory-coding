@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "2dcnn.html",
+    "href": "2dcnn.html",
+    "title": "Model 2: Looped 2DCNN",
+    "section": "",
+    "text": "flowchart TD\nStimulus --&gt; 2DConv\n2DConv --&gt; |loop over each frame| 2DConv\n2DConv --&gt; fc1[\"Fully Connected Layer\"]\nfc1 --&gt; fc_r[\"Rotation Output\"]\nfc1 --&gt; fc_o[\"Orientation Output\"]"
+  },
+  {
+    "objectID": "2dcnn.html#motivation",
+    "href": "2dcnn.html#motivation",
+    "title": "Model 2: Looped 2DCNN",
+    "section": "Motivation",
+    "text": "Motivation\nOnce I finished the 3DCNN, the project became a balancing act between obtaining good classification results and maintaining a relationship to the primate visual system. I began with the 3DCNN architecture that obtained good classification results, but over the course of the project decided that the kernels learned by the 3D CNN abstracted the problem to a degree that the learned kernels didn’t represent biological receptive fields adequately.\nConsidering that the retina captures 2-dimensional information, I opted to switch to a 2d convolutional architecture and add an LSTM layer separately to keep track of differences between contiguous animation frames. My hope was that this would enable the network to learn kernels that resembled those found in MT+.\nI did get the 2DCNN-LSTM model working, and that was a great leanring experience. Unfortunately LSTM is very compute-hungry, and despite getting a working model, I didn’t have enough time to properly train and test it.\nLuckily, in the course of preparing the 2D CNN output for the LSTM layer, I developed an architecture that allowed 2D CNNs to learn temporal features on their own. I put 2d convolution layers inside a loop, concatenated each layer into an array and flattened the result for each 5-frame stack, then predicted on that output. This architecture is fairly computationally efficient, and more accurately models 2D inputs flowing through the visual stream."
+  },
+  {
+    "objectID": "2dcnn.html#results",
+    "href": "2dcnn.html#results",
+    "title": "Model 2: Looped 2DCNN",
+    "section": "Results",
+    "text": "Results"
+  },
+  {
+    "objectID": "bigrf.html",
+    "href": "bigrf.html",
+    "title": "Big Receptive Field",
+    "section": "",
+    "text": "Throughout the project, I wanted to find a way to train a model to learn a convolutional kernel (or collection of kernels) that approximated the sparse-but-uniform structure of orientation-selective cortical columns in MT. As 607 Sensory Coding was about mapping, I was motivated to create a model that “mapped” the entire stimulus space.\nTypically, CNNs learn a number of kernel and then cycle through them as they slide across a stimulus. While the results of this process share properties with biological visual systems, there is no structure retinotopic or otherwise, that fixes a particular kernel to a particular location in feature space.\nIn the course of the project, I had a moment of clarity as to why orientation-selective cortical columns are so nicely interspersed with each other: maximum coverage of the possible feature space. While they are fixed, cortical columns of a particular selectivity span the entire retinotopic map. This coverage is sparser than in a CNN, where every kernel sees every pixel in a stimulus, but the idea is the same.\nBased on this thought, I modified my 3DCNN so that the second convolutional layer had a single large kernel that matched the stimulus size exactly. This kernel never moved across the image, rather it sat in place while the stimuli under it changed. The resulting model produced both good classification accuracy and a column-like structure in the kernel."
+  },
+  {
+    "objectID": "3dcnn.html",
+    "href": "3dcnn.html",
+    "title": "Model 1: 3DCNN",
+    "section": "",
+    "text": "flowchart TD\nStimulus --&gt; 3DConv\n3DConv --&gt; fc1[\"Fully Connected Layer\"]\nfc1 --&gt; fc_r[\"Rotation Output\"]\nfc1 --&gt; fc_o[\"Orientation Output\"]"
+  },
+  {
+    "objectID": "3dcnn.html#motivation",
+    "href": "3dcnn.html#motivation",
+    "title": "Model 1: 3DCNN",
+    "section": "Motivation",
+    "text": "Motivation\nI started the project using a 3D CNN architecture that obtained good classification results on rotation direction and stimulus type, but over the course of the project decided that a 3D CNN abstracted the problem to a degree that the learned kernels didn’t represent biological receptive fields adequately. Considering that the retina captures 2-dimensional information, and topological maps in cortex are essentially 2D, I switched to a 2D architecture (2DCNN) that employed looping to train the convolutional layers on the temporal dimension of the stimuli."
+  },
+  {
+    "objectID": "3dcnn.html#results",
+    "href": "3dcnn.html#results",
+    "title": "Model 1: 3DCNN",
+    "section": "Results",
+    "text": "Results\nThe 3DCNN performed very well, and could reach &gt;98% accuracy on both classification tasks in 100 epochs or fewer. While they may not be biomimetic, 3DCNNs do an excellent job learning features of 3-dimensional data.\n\n\n\nA small selection of kernels learned by the 3DCNN. Note that the kernel in row 1, column 2 resembles a classic description of a direction-sensitive center-surround RF."
+  }
+]

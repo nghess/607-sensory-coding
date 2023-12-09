@@ -171,7 +171,7 @@ Train Model
 """
 
 # Training loop
-num_epochs = 100
+num_epochs = 300
 running_loss = []
 
 for epoch in range(num_epochs):  # num_epochs is the number of epochs
@@ -201,7 +201,7 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
         loss_angle = criterion_angle(output_angle, labels_angle)
 
         # Combine the losses
-        loss = (loss_rotation*0) + (loss_angle)
+        loss = (loss_rotation/2) + (loss_angle)
 
         # Backward pass and optimization
         loss.backward()  # Compute the gradients
@@ -218,7 +218,7 @@ for epoch in range(num_epochs):  # num_epochs is the number of epochs
 """
 Save Model
 """
-model_name = "looped_2dcnn_angleonly"
+model_name = "looped_2dcnn_3layer_final_attempt"
 torch.save(model, f"{model_name}.pt")
 
 with open(f"{model_name}.txt", 'a') as file:
