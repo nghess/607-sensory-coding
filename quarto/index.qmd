@@ -6,7 +6,7 @@ title: "607 Sensory Coding Final Project"
 For my 607 Sensory Coding Project, I took a first stab at building a biologically inspired neural network modeling the visual system. As my primary interest is in the computation and perception of motion, I sought to design an architecture that mimics some of the properties of primate area MT. 
 The models were trained in two tasks: judgment of object orientation, and judgment object rotation direction. To teach the networks these tasks, I created a synthetic dataset based on an imagined psychophysical task in which the subject would judge rotation direction and average orientation (in degrees) of a short animation of a rotating bar.
 
-I had two primary goals this project: That my models would learn feature detectors analogous to direction-sensitive neurons in MT, and that I could devise a situation where the network learned features that mimicked the structure of cortical columns.
+I had two primary goals this project: That my models would learn feature detectors (kernels) analogous to direction-sensitive neurons in MT, and that I could devise a architecture in which the network learned kernels that mimicked the structure of cortical columns.
 
 ![Figure 1: Direction-sensitive Receptive Fields (RFs). One goal of this project was to train a convolutional neural network to learn kernels with similar properties to these RFs.](images/mt_rfs.png)
 
