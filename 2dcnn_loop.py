@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, random_split
-from sklearn.metrics import accuracy_score
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import tifffile as tiff
@@ -92,7 +91,7 @@ class ConvLSTMNetwork(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=4, out_channels=8, kernel_size=5, padding=2)
 
         # Third Convolutional Layer
-        self.conv3 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, padding=2)
+        #self.conv3 = nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5, padding=2)
 
         # Dimensionality reduction layer
         self.intermediate_fc = nn.Linear(im_fc_in, im_fc_out)
@@ -117,7 +116,7 @@ class ConvLSTMNetwork(nn.Module):
             # Pass the frame through convolutional layers
             out = self.relu(self.conv1(frame))
             out = self.relu(self.conv2(out))
-            out = self.relu(self.conv3(out))
+            #out = self.relu(self.conv3(out))
             
             # Flatten the output for FC layers
             out = out.view(batch_size, -1) 
